@@ -118,25 +118,46 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"app.js":[function(require,module,exports) {
+// 반복되는 코드를 줄여 유지보수 용이하게 함
+var container = document.getElementById('root');
 var ajax = new XMLHttpRequest();
-var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json"; //동기적 처리
+var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json"; //컨텐츠를 보여줄 div 생성
 
+var content = document.createElement('div'); // 개별 글을 불러오는 URL
+
+var CONTENT_URL = "https://api.hnpwa.com/v0/item/@id.json";
 ajax.open("GET", NEWS_URL, false);
-ajax.send(); //JSON 문자열 객체화
+ajax.send();
+var newsFeed = JSON.parse(ajax.response);
+var ul = document.createElement('ul'); //HashChange 이벤트
 
-var newsFeed = JSON.parse(ajax.response); // 하드코딩
-
-document.getElementById('root').innerHTML = "<ul>\n  <li>".concat(newsFeed[0].title, "</li>\n  <li>").concat(newsFeed[1].title, "</li>\n  <li>").concat(newsFeed[2].title, "</li>\n</ul>"); // 코드적 처리
-
-var ul = document.createElement('ul');
+window.addEventListener('hashchange', function () {
+  // location : 브라우저 기본 제공 객체, 주소 관련 정보 제공
+  // 클릭한 게시물의 정보를 받아와 파싱
+  var id = location.hash.substr(1);
+  ajax.open('GET', CONTENT_URL.replace("@id", id), false);
+  ajax.send();
+  var newsContent = JSON.parse(ajax.response);
+  var title = document.createElement('h1');
+  title.innerHTML = newsContent.title;
+  content.appendChild(title);
+});
 
 for (var i = 0; i < 10; i++) {
-  var li = document.createElement('li');
-  li.innerHTML = newsFeed[i].title;
+  var li = document.createElement('li'); //앵커 태그 추가
+
+  var a = document.createElement('a');
+  a.href = "#".concat(newsFeed[i].id); // 타이틀 옆에 댓글 수 표기
+
+  a.innerHTML = "".concat(newsFeed[i].title, " (").concat(newsFeed[i].comments_count, ")"); //이벤트 리스너 등록
+
+  a.addEventListener('click', function () {});
+  li.appendChild(a);
   ul.appendChild(li);
 }
 
-document.getElementById('root').appendChild(ul);
+container.appendChild(ul);
+container.appendChild(content);
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -165,7 +186,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49921" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51430" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
